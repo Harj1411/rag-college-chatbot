@@ -68,9 +68,9 @@ College students and faculty frequently struggle to find official academic polic
 ---
 
 ## 7. Backend
-- ⚡ **Render Deployed API Base URL:** [https://campusmind-backend.onrender.com](https://campusmind-backend.onrender.com)
-- 📖 **Swagger Interactive API Documentation:** [https://campusmind-backend.onrender.com/docs](https://campusmind-backend.onrender.com/docs)
-- 💓 **API Health Heartbeat Endpoint:** [https://campusmind-backend.onrender.com/api/health](https://campusmind-backend.onrender.com/api/health)
+- ⚡ **Render Deployed API Base URL:** [https://campusmind-backend-wjcs.onrender.com](https://campusmind-backend-wjcs.onrender.com)
+- 📖 **Swagger Interactive API Documentation:** [https://campusmind-backend-wjcs.onrender.com/docs](https://campusmind-backend-wjcs.onrender.com/docs)
+- 💓 **API Health Heartbeat Endpoint:** [https://campusmind-backend-wjcs.onrender.com/api/health](https://campusmind-backend-wjcs.onrender.com/api/health)
 
 ---
 
