@@ -63,7 +63,7 @@ College students and faculty frequently struggle to find official academic polic
 ---
 
 ## 6. Live Demo
-- 🌐 **Vercel Deployed Frontend App:** [https://rag-college-chatbot.vercel.app](https://rag-college-chatbot.vercel.app)
+- 🌐 **Vercel Deployed Frontend App:** [https://rag-college-chatbot-red.vercel.app](https://rag-college-chatbot-red.vercel.app)
 
 ---
 
