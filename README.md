@@ -3,331 +3,173 @@
 > **Specification-Driven AI Platform for College Document Intelligence**  
 > Built for NxtWave AI Project Submission *(CampusMind)*
 
-CampusMind is a full-stack **Retrieval-Augmented Generation (RAG)** chatbot that enables students and staff to ask natural-language questions about official college documents (syllabus, circulars, exam schedules, fee structures, hostel rules, placement notices) and receive **grounded answers with verifiable source citations**.
+---
+
+## 1. Project Name
+**CampusMind** — Retrieval-Augmented Generation (RAG) College Document Chatbot
 
 ---
 
-## 📑 Table of Contents
+## 2. Problem Statement
+College students and faculty frequently struggle to find official academic policies, fee structures, hostel rules, placement guidelines, and examination schedules buried across lengthy, fragmented PDF circulars and handbooks. Traditional keyword search tools return entire multi-page documents requiring tedious manual reading, while standard generic LLM wrappers frequently hallucinate plausible-sounding but incorrect policies.
 
-- [Core Value & Zero-Hallucination Promise](#-core-value--zero-hallucination-promise)
-- [Deployment Stack (Vercel + Render + MongoDB Atlas)](#-deployment-stack-vercel--render--mongodb-atlas)
-- [Architecture & RAG Pipeline](#-architecture--rag-pipeline)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Prerequisites](#-prerequisites)
-- [Step-by-Step Deployment & Local Setup Guide](#-step-by-step-deployment--local-setup-guide)
-  - [1. MongoDB Atlas Setup](#1-mongodb-atlas-setup)
-  - [2. Render Backend Deployment](#2-render-backend-deployment)
-  - [3. Vercel Frontend Deployment](#3-vercel-frontend-deployment)
-  - [4. Local Development Setup](#4-local-development-setup)
-- [Testing the RAG Pipeline (Sample Questions)](#-testing-the-rag-pipeline-sample-questions)
-- [API Endpoints Reference](#-api-endpoints-reference)
-- [Database Schema & Collections](#-database-schema--collections)
-- [Security & Access Control](#-security--access-control)
-- [Submission Checklist](#-submission-checklist)
+**CampusMind** solves this problem by providing a specification-driven RAG AI assistant that indexes official college documents, parses text into page-level chunk embeddings, and answers student questions with **100% grounded facts and verifiable source citations (exact document name, page number, and similarity confidence score)**. If information is absent from official college documents, CampusMind explicitly returns a zero-hallucination fallback notice (*"Not Found in College Documents"*).
 
 ---
 
-## 🚀 Deployment Stack (Vercel + Render + MongoDB Atlas)
+## 3. Features
 
-CampusMind is production-ready for deployment across standard cloud providers:
+### 🌟 Core Features
+- 🔍 **Grounded RAG Engine:** Answers questions using only official uploaded college documents.
+- 📌 **Verifiable Source Citations:** Displays exact document filename, page number, and similarity confidence score for every answer.
+- 🚫 **Zero-Hallucination Fallback:** Safely declines ungrounded queries with a clear *"Not Found in College Documents"* notification when chunk similarity falls below threshold (`MIN_SIMILARITY_SCORE = 0.35`).
+- ⚡ **Real-Time Token Streaming (SSE):** Real-time token-by-token typewriter response delivery via Server-Sent Events (`POST /api/chat/sessions/{id}/messages/stream`).
+- 🔐 **JWT Authentication & Role Separation:** Secure password hashing via `bcrypt`, PyJWT access tokens, and role guard protection (`Student` vs `Admin`).
+- 📄 **Admin Document Management:** Multi-format PDF/DOCX/TXT document parser, recursive character chunker (~800 chars), and vector store purging capabilities.
+- 📊 **Admin Analytics Dashboard:** Visual metrics tracking total query volume, active documents, total vector chunks, and top-cited documents.
+- 💬 **Conversation History & Session Drawer:** Persistent multi-session conversation history with search and session deletion.
 
-| Component | Cloud Provider | Deployment Directory | Configuration File |
-|---|---|---|---|
-| 🌐 **Frontend** | **Vercel** | `frontend/` | `frontend/vercel.json` |
-| ⚡ **Backend REST API** | **Render** | `backend/` | `backend/render.yaml` |
-| 🗄️ **Database** | **MongoDB Atlas** | Cloud Mongo Cluster | `backend/seed_atlas.py` |
+### 🎁 Bonus Features
+- ⚡ **Dual-Layer Database Architecture:** Asynchronous MongoDB Atlas cloud driver with automatic offline local file persistence fallback (`local_db.json`).
+- 👍👎 **User Feedback System:** Thumbs up / down feedback submission per AI response to track retrieval quality.
+- 🎨 **Dark Glassmorphism UI:** Modern responsive UI with micro-animations, loading skeletons, and custom Markdown syntax highlighting.
+- 🧪 **Automated E2E Test Suite:** Complete 7-step integration test runner (`backend/test_e2e.py`).
 
 ---
 
-## 💡 Core Value & Zero-Hallucination Promise
+## 4. Technology Stack
 
-| Feature | Standard LLM Wrapper | CampusMind RAG Engine |
+- **Frontend Framework:** React 18 (Vite)
+- **Styling:** Tailwind CSS & Vanilla CSS (Custom Dark Glassmorphism Design System)
+- **State Management:** Zustand (with localStorage persistence)
+- **Icons & UI Utilities:** Lucide React, `react-markdown`, `clsx`, `tailwind-merge`
+- **Backend Framework:** FastAPI (Python 3.11+) & Uvicorn ASGI Server
+- **RAG & Vector Database:** LangChain, ChromaDB (Local persistent vector store), Google Gemini Embeddings (`text-embedding-004`), Google Gemini LLM (`gemini-1.5-flash` / `gemini-2.0`)
+- **Document Parsers:** `pypdf`, `pdfplumber`, `python-docx`
+- **Primary Database:** MongoDB Atlas (Async `motor` & `pymongo[srv]` drivers) + persistent file fallback
+- **Authentication & Security:** `bcrypt`, `python-jose` (JWT), `passlib`
+- **Deployment Platform:** Vercel (Frontend), Render (Backend), MongoDB Atlas (Database)
+
+---
+
+## 5. Screenshots
+
+| Screen | Description | Screenshot Link / Preview |
 |---|---|---|
-| **Knowledge Source** | General training data (often outdated) | **College's own uploaded documents** |
-| **Source Attribution** | None (Guesses answers) | **Exact document name, page #, and confidence score** |
-| **Missing Information** | Hallucinates plausible-sounding facts | **Explicitly returns "I don't know / Not found in college documents"** |
-| **Audit Trail** | None | **All retrieved chunks and similarity scores are stored** |
+| 💬 **Chat Interface & Real-Time Citations** | Student RAG chat with real-time SSE typewriter streaming & source citation drawer | ![Chat Interface](docs/screenshots/chat_interface.png) |
+| 📄 **Admin Document Manager** | Admin document upload drag-and-drop zone & vector chunk index status table | ![Admin Document Manager](docs/screenshots/admin_documents.png) |
+| 📊 **Admin Analytics Dashboard** | Real-time query volume, document count, and top-cited documents analytics | ![Admin Analytics Dashboard](docs/screenshots/admin_analytics.png) |
 
 ---
 
-## 🏗 Architecture & RAG Pipeline
+## 6. Live Demo
+- 🌐 **Vercel Deployed Frontend App:** [https://rag-college-chatbot.vercel.app](https://rag-college-chatbot.vercel.app) *(Replace with your live Vercel URL)*
 
-```
-                                  [Admin User]
-                                       │
-                                Uploads PDF / DOCX
-                                       │
-                                       ▼
-                       [Text Extraction & Page Indexing]
-                                       │
-                       [Recursive Character Splitter]
-                          (~800 tokens, 100 overlap)
-                                       │
-                        [Gemini text-embedding-004]
-                                       │
-                                       ▼
-                         [ChromaDB Vector Store]
-                                       ▲
-                                       │ (Cosine Similarity Search)
-                                       │
-[Student User] ──► [Question] ──► [Query Embedding]
-                                       │
-                      Top-4 Chunks (Similarity >= Threshold)
-                                       │
-                         [Grounded Prompt Builder]
-                                       │
-                           [Gemini 1.5 Pro / Flash]
-                                       │
-                                       ▼
-                    [Grounded Answer + Source Citations]
+---
+
+## 7. Backend
+- ⚡ **Render Deployed API Base URL:** [https://rag-college-chatbot.onrender.com](https://rag-college-chatbot.onrender.com) *(Replace with your live Render URL)*
+- 📖 **Swagger Interactive API Documentation:** [https://rag-college-chatbot.onrender.com/docs](https://rag-college-chatbot.onrender.com/docs)
+- 💓 **API Health Heartbeat Endpoint:** [https://rag-college-chatbot.onrender.com/api/health](https://rag-college-chatbot.onrender.com/api/health)
+
+---
+
+## 8. Setup Instructions
+
+### Prerequisites
+- **Node.js** (v18.x or higher) & **npm**
+- **Python** (v3.11.x or higher) & **pip**
+- **Google Gemini API Key** ([Get your free API key](https://aistudio.google.com/app/apikey))
+
+---
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/Harj1411/rag-college-chatbot.git
+cd rag-college-chatbot
 ```
 
 ---
 
-## 📁 Project Structure
-
-```
-ai chatbot/
-├── demo_documents/
-│   └── college_handbook_2026.txt      # Demo college policies & regulations
-│
-├── frontend/                          # React + Vite Client (Deployed on Vercel)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx             # Top bar with role badges & profile
-│   │   │   ├── ProtectedRoute.jsx     # Auth & Admin role route guard
-│   │   │   ├── ChatWindow/            # Message stream & auto-expanding input
-│   │   │   ├── MessageBubble/         # User/AI bubble & typewriter cursor
-│   │   │   ├── SourceCitation/        # Citation cards & excerpt modal
-│   │   │   └── SessionSidebar/        # Past chat history drawer & new chat
-│   │   ├── pages/
-│   │   │   ├── Landing.jsx            # Product landing & RAG explanation
-│   │   │   ├── Login.jsx              # Sign-in with 1-click demo accounts
-│   │   │   ├── Register.jsx           # Student & Admin account registration
-│   │   │   ├── Chat.jsx               # ChatGPT-style RAG chat interface
-│   │   │   ├── History.jsx            # Searchable conversation history
-│   │   │   ├── Settings.jsx           # Profile & live backend health check
-│   │   │   └── admin/
-│   │   │       ├── Documents.jsx      # Admin document upload & vector manager
-│   │   │       └── Analytics.jsx      # Admin charts & top-cited documents
-│   │   ├── services/
-│   │   │   └── api.js                 # Axios instance & SSE streamMessage
-│   │   ├── store/
-│   │   │   └── authStore.js           # Zustand store with localStorage sync
-│   │   ├── index.css                  # Custom design system & animations
-│   │   ├── App.jsx                    # Route definitions
-│   │   └── main.jsx                   # React root
-│   ├── vercel.json                    # Vercel deployment configuration
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-│
-├── backend/                           # FastAPI Server (Deployed on Render)
-│   ├── app/
-│   │   ├── core/
-│   │   │   ├── config.py              # Environment settings (Pydantic)
-│   │   │   ├── security.py            # Bcrypt hashing & JWT validation
-│   │   │   └── db.py                  # MongoDB async connection & file persistence
-│   │   ├── models/
-│   │   │   ├── user.py                # User auth schemas & roles
-│   │   │   ├── document.py            # Ingested doc metadata schemas
-│   │   │   └── chat.py                # Sessions, messages & citation schemas
-│   │   ├── rag/
-│   │   │   ├── chunking.py            # PDF/DOCX page parser & text splitter
-│   │   │   ├── embeddings.py          # Google Gemini text-embedding-004 manager
-│   │   │   ├── vector_store.py        # ChromaDB persistent collection manager
-│   │   │   ├── retriever.py           # Similarity retrieval & score thresholding
-│   │   │   └── prompt_templates.py    # Strict grounding prompt templates
-│   │   ├── services/
-│   │   │   ├── auth_service.py        # Registration, login, profile logic
-│   │   │   ├── ingestion_service.py   # Upload orchestrator & ChromaDB purge
-│   │   │   ├── chat_service.py        # RAG query flow & SSE streaming
-│   │   │   └── analytics_service.py   # Admin metrics & query analytics
-│   │   ├── routers/
-│   │   │   ├── auth_router.py         # /api/auth endpoints
-│   │   │   ├── document_router.py     # /api/documents endpoints (Admin)
-│   │   │   ├── chat_router.py         # /api/chat & SSE streaming endpoints
-│   │   │   ├── admin_router.py        # /api/admin/analytics endpoint
-│   │   │   └── health_router.py       # /api/health endpoint
-│   │   ├── workers/
-│   │   │   └── ingestion_worker.py    # Background task processor
-│   │   └── main.py                    # FastAPI entrypoint & CORS
-│   ├── seed_demo.py                   # 1-Click demo seeder script
-│   ├── seed_atlas.py                  # MongoDB Atlas database seeder
-│   ├── render.yaml                    # Render deployment blueprint
-│   ├── test_e2e.py                    # Integration test suite
-│   ├── requirements.txt               # Backend dependencies
-│   └── .env                           # Backend environment config
-│
-├── Spec.md                            # Single Source of Truth Specification
-├── README.md                          # Full Project Documentation
-└── .gitignore
-```
-
----
-
-## 🌐 Step-by-Step Deployment & Local Setup Guide
-
-### 1. MongoDB Atlas Database Setup
-
-1. Create a free cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-2. Create a Database User (username and password).
-3. Under **Network Access**, add `0.0.0.0/0` to allow connection requests from Render.
-4. Copy your Connection String (`mongodb+srv://<username>:<password>@cluster0.mongodb.net/campusmind?retryWrites=true&w=majority`).
-5. Run the Atlas seeder from `backend/`:
-   ```bash
-   cd backend
-   MONGO_URI="mongodb+srv://<user>:<password>@cluster0.mongodb.net/campusmind?retryWrites=true&w=majority" python seed_atlas.py
-   ```
-
----
-
-### 2. Render Backend Deployment
-
-1. Push your repository to GitHub.
-2. Log in to [Render](https://render.com) and click **New +** → **Web Service**.
-3. Connect your GitHub repository.
-4. Fill in the deployment details:
-   - **Root Directory:** `backend`
-   - **Environment:** `Python 3`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Under **Environment Variables**, add:
-   - `GEMINI_API_KEY` = your Google Gemini API Key
-   - `MONGO_URI` = your MongoDB Atlas connection string
-   - `DB_NAME` = `campusmind`
-   - `JWT_SECRET` = your secret key
-   - `ALLOWED_ORIGINS` = your Vercel frontend URL (e.g. `https://campusmind.vercel.app`)
-
----
-
-### 3. Vercel Frontend Deployment
-
-1. Log in to [Vercel](https://vercel.com) and click **Add New** → **Project**.
-2. Import your GitHub repository.
-3. Configure the framework and root directory:
-   - **Framework Preset:** `Vite`
-   - **Root Directory:** `frontend`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-4. Under **Environment Variables**, add:
-   - `VITE_API_BASE_URL` = your Render backend URL (e.g. `https://campusmind-backend.onrender.com`)
-5. Click **Deploy**!
-
----
-
-### 4. Local Development Setup
-
-#### Backend Setup (`backend/`)
-```powershell
+### Step 2: Backend Setup (`backend/`)
+```bash
+# Navigate to backend directory
 cd backend
+
+# Create & activate virtual environment
 python -m venv venv
-.\venv\Scripts\Activate.ps1   # (Windows) or source venv/bin/activate
+# On Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# On macOS / Linux:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Create .env file from template
+cp .env.example .env
+
+# Seed demo admin & student accounts + sample handbook into vector DB
 python seed_demo.py
+
+# Start FastAPI backend server
 uvicorn app.main:app --reload --port 8000
 ```
+- Backend API will run at `http://localhost:8000`.
 
-#### Frontend Setup (`frontend/`)
-```powershell
+---
+
+### Step 3: Frontend Setup (`frontend/`)
+Open a new terminal window:
+```bash
+# Navigate to frontend directory
 cd frontend
+
+# Install dependencies
 npm install
+
+# Create .env file from template
+cp .env.example .env
+
+# Start Vite development server
 npm run dev
 ```
-
-- **Frontend App:** `http://localhost:5173`
-- **Backend Swagger Docs:** `http://localhost:8000/docs`
+- Frontend Web App will run at `http://localhost:5173`.
 
 ---
 
-## 🧪 Testing the RAG Pipeline (Sample Questions)
-
-Log in using the **1-Click Quick Demo** button or test credentials:
-- **Student Account:** `student@campusmind.edu` / `student123456`
+### Step 4: Demo Credentials for Local Testing
 - **Admin Account:** `admin@campusmind.edu` / `admin123456`
-
-### Grounded Questions
-- *"What is the minimum attendance requirement to sit for semester examinations?"*
-  - **Answer:** Minimum 75% attendance mandatory. Condonation available between 65%-74%.
-  - **Source Citation:** `college_handbook_2026.txt`, Page 1.
-- *"How much is the hostel fee and when is the late penalty applied?"*
-  - **Answer:** INR 45,000 per semester for double occupancy. Late fee is INR 100 per day after the 10th working day.
-
-### Out-of-Scope Questions
-- *"Who won the 2024 FIFA World Cup?"*
-  - **Answer:** 🔍 **Not Found in College Documents** notice.
+- **Student Account:** `student@campusmind.edu` / `student123456`
 
 ---
 
-## 📡 API Endpoints Reference
+## 9. Environment Variables
 
-### Authentication (`/api/auth`)
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Public | Register new student or admin account |
-| `POST` | `/api/auth/login` | Public | Authenticate credentials and receive Bearer JWT |
-| `GET` | `/api/auth/me` | Authenticated | Retrieve authenticated user profile & role |
+### Backend Environment Variables (`backend/.env`)
+| Variable Name | Description | Example / Default Value |
+|---|---|---|
+| `GEMINI_API_KEY` | Google Gemini API Key for embeddings and LLM answer generation | `your_gemini_api_key_here` *(Secret)* |
+| `MONGO_URI` | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/...` |
+| `DB_NAME` | Database name | `campusmind` |
+| `JWT_SECRET` | Secret key used for signing JWT access tokens | `your_super_secret_jwt_key` |
+| `JWT_ALGORITHM` | Algorithm used for JWT encoding | `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | JWT expiration duration in minutes | `1440` |
+| `CHROMA_PERSIST_DIR` | Path to persistent local ChromaDB directory | `./chroma_db` |
+| `UPLOAD_DIR` | Directory for uploaded document files | `./uploads` |
+| `MIN_SIMILARITY_SCORE` | Cosine similarity threshold for RAG retrieval | `0.35` |
+| `TOP_K_CHUNKS` | Maximum number of vector chunks retrieved per query | `4` |
+| `PORT` | Backend server port | `8000` |
+| `ALLOWED_ORIGINS` | Permitted CORS origins (comma-separated) | `http://localhost:5173,http://localhost:3000` |
 
-### Chat & Retrieval (`/api/chat`)
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/api/chat/sessions` | Authenticated | Create a new chat session |
-| `GET` | `/api/chat/sessions` | Authenticated | List all user chat sessions |
-| `GET` | `/api/chat/sessions/{id}` | Authenticated | Fetch session details and message history |
-| `POST` | `/api/chat/sessions/{id}/messages` | Authenticated | Send question, execute RAG pipeline, return grounded answer & citations |
-| `POST` | `/api/chat/sessions/{id}/messages/stream` | Authenticated | Real-time SSE token-by-token typewriter streaming |
-| `DELETE` | `/api/chat/sessions/{id}` | Authenticated | Delete a conversation session |
-| `POST` | `/api/chat/feedback` | Authenticated | Submit thumbs up/down rating on an AI answer |
-
-### Document Management (`/api/documents`)
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/api/documents/upload` | **Admin Only** | Upload PDF/DOCX; triggers background chunking & vector storage |
-| `GET` | `/api/documents` | Authenticated | List all documents with ingestion status |
-| `GET` | `/api/documents/{id}` | Authenticated | Fetch specific document details |
-| `DELETE` | `/api/documents/{id}` | **Admin Only** | Delete document and purge all associated vectors from ChromaDB |
-
-### Admin & Analytics (`/api/admin`)
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/admin/analytics` | **Admin Only** | Return query volume, top-cited documents, and status counts |
-
-### Health (`/api/health`)
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/health` | Public | Heartbeat check with ChromaDB vector count |
+### Frontend Environment Variables (`frontend/.env`)
+| Variable Name | Description | Example / Default Value |
+|---|---|---|
+| `VITE_API_BASE_URL` | Base API URL pointing to FastAPI backend server | `http://localhost:8000` (Local) / `https://your-backend.onrender.com` (Prod) |
 
 ---
 
-## 🔐 Security & Access Control
-
-- **Password Security:** All passwords hashed with industry-standard **bcrypt**. Plaintext passwords are never saved or logged.
-- **JWT Authentication:** Tokens signed with secret `JWT_SECRET` and algorithm `HS256`. Client sends `Authorization: Bearer <token>`.
-- **Role Separation:** Admin routes (`/api/documents/upload`, `DELETE /api/documents/{id}`, `/api/admin/analytics`) strictly return `403 Forbidden` for non-admin accounts.
-- **Input Validation:** Every payload is strictly validated using **Pydantic v2 schemas**.
-- **File Upload Protection:** Filenames are sanitized, MIME types are verified, and payload sizes are capped at 50MB.
-
----
-
-## 📋 Submission Checklist
-
-- [x] Full Git repository with clean `frontend/` and `backend/` architecture
-- [x] Dedicated deployment setup for **Vercel** (`frontend/vercel.json`), **Render** (`backend/render.yaml`), and **MongoDB Atlas** (`backend/seed_atlas.py`)
-- [x] Spec-Driven Development compliance against [Spec.md](file:///e:/Onedrive/Desktop/ai%20chatbot/Spec.md)
-- [x] Working JWT Authentication with Role Separation (Admin vs Student)
-- [x] Admin Document Upload pipeline (PDF/DOCX/TXT) with background ingestion
-- [x] LangChain Chunking + Google Gemini `text-embedding-004` + persistent ChromaDB
-- [x] Grounded RAG Chat endpoint returning citations (Doc Name + Page + Score)
-- [x] Real-time SSE typewriter token streaming (`/api/chat/sessions/{id}/messages/stream`)
-- [x] Explicit zero-hallucination *"Not found in college documents"* fallback
-- [x] 1-Click test demo accounts & pre-ingested college handbook
-
----
-
-## 👥 Authors & Credits
-
+## 👥 Author & License
 - **Project:** CampusMind — RAG-Based College Chatbot
-- **Framework:** Spec-Driven Development (SDD)
-- **Deployment:** Vercel (Frontend), Render (Backend), MongoDB Atlas (Database)
-# rag-college-chatbot
+- **Repository:** [Harj1411/rag-college-chatbot](https://github.com/Harj1411/rag-college-chatbot.git)
+- **License:** MIT
