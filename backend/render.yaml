@@ -25,7 +25,7 @@ services:
       - key: UPLOAD_DIR
         value: ./uploads
       - key: MIN_SIMILARITY_SCORE
-        value: "0.35"
+        value: "0.15"
       - key: TOP_K_CHUNKS
         value: "4"
       - key: ALLOWED_ORIGINS
