@@ -8,7 +8,8 @@ python-dotenv>=1.0.0
 
 # Database
 motor>=3.4.0
-pymongo>=4.7.0
+pymongo[srv]>=4.7.0
+dnspython>=2.6.0
 
 # Security & Auth
 python-jose[cryptography]>=3.3.0
