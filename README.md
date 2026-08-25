@@ -56,9 +56,9 @@ College students and faculty frequently struggle to find official academic polic
 
 | Screen | Description | Screenshot Link / Preview |
 |---|---|---|
-| 💬 **Chat Interface & Real-Time Citations** | Student RAG chat with real-time SSE typewriter streaming & source citation drawer | ![Chat Interface](docs/screenshots/chat_interface.png) |
-| 📄 **Admin Document Manager** | Admin document upload drag-and-drop zone & vector chunk index status table | ![Admin Document Manager](docs/screenshots/admin_documents.png) |
-| 📊 **Admin Analytics Dashboard** | Real-time query volume, document count, and top-cited documents analytics | ![Admin Analytics Dashboard](docs/screenshots/admin_analytics.png) |
+| 💬 **Chat Interface & Real-Time Citations** | Student RAG chat with real-time SSE typewriter streaming & source citation drawer | ![Chat Interface](docs/screenshots/chat_interface.jpg) |
+| 📄 **Admin Document Manager** | Admin document upload drag-and-drop zone & vector chunk index status table | ![Admin Document Manager](docs/screenshots/admin_documents.jpg) |
+| 📊 **Admin Analytics Dashboard** | Real-time query volume, document count, and top-cited documents analytics | ![Admin Analytics Dashboard](docs/screenshots/admin_analytics.jpg) |
 
 ---
 
