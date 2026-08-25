@@ -59,7 +59,9 @@ async def seed():
         print(f"ℹ️ Demo Student already exists: {student_email}")
 
     # 3. Seed Demo Document & ChromaDB Vectors
-    demo_doc_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "demo_documents", "college_handbook_2026.txt"))
+    demo_doc_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "demo_documents", "college_handbook_2026.txt"))
+    if not os.path.exists(demo_doc_path):
+        demo_doc_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "demo_documents", "college_handbook_2026.txt"))
     if os.path.exists(demo_doc_path):
         doc_id = "demo-handbook-doc-id"
         existing_doc = await docs_col.find_one({"id": doc_id})
