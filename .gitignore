@@ -1,0 +1,39 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Node.js
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+backend/venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Local Vector Store & Storage
+backend/chroma_db/
+backend/uploads/
+backend/local_db.json
+chroma_db/
+uploads/
+
+# IDE & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

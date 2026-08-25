@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: campusmind-backend
+    env: python
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: DB_NAME
+        value: campusmind
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: CHROMA_PERSIST_DIR
+        value: ./chroma_db
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: MIN_SIMILARITY_SCORE
+        value: "0.35"
+      - key: TOP_K_CHUNKS
+        value: "4"
+      - key: ALLOWED_ORIGINS
+        sync: false

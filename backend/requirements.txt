@@ -1,0 +1,30 @@
+# Backend Dependencies
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+email-validator>=2.0.0
+python-dotenv>=1.0.0
+
+# Database
+motor>=3.4.0
+pymongo>=4.7.0
+
+# Security & Auth
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.0.1
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.9
+
+# RAG & Embeddings & LLM
+google-genai>=0.1.0
+google-generativeai>=0.8.0
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-text-splitters>=0.2.0
+chromadb>=0.5.0
+
+# Document Parsers
+pypdf>=4.2.0
+pdfplumber>=0.11.0
+python-docx>=1.1.0
