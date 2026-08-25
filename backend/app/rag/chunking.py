@@ -41,16 +41,63 @@ def extract_text_from_pdf(file_path: str) -> List[Dict[str, Any]]:
 
 def extract_text_from_docx(file_path: str) -> List[Dict[str, Any]]:
     """
-    Extracts text from a DOCX file.
+    Extracts text from a DOCX/DOC file including paragraphs, tables, and fallback raw text parsing.
     Returns a list of dicts with sections/paragraphs.
     """
-    import docx
-    doc = docx.Document(file_path)
     full_text = []
-    for para in doc.paragraphs:
-        if para.text.strip():
-            full_text.append(para.text.strip())
-    
+
+    # 1. Try python-docx parsing (paragraphs + tables)
+    try:
+        import docx
+        doc = docx.Document(file_path)
+
+        # Extract paragraphs
+        for para in doc.paragraphs:
+            if para.text and para.text.strip():
+                full_text.append(para.text.strip())
+
+        # Extract tables
+        for table in doc.tables:
+            for row in table.rows:
+                row_cells = [cell.text.strip() for cell in row.cells if cell.text and cell.text.strip()]
+                if row_cells:
+                    full_text.append(" | ".join(row_cells))
+    except Exception:
+        pass
+
+    # 2. If docx failed or returned empty text (e.g. zipped XML document)
+    if not full_text:
+        try:
+            import zipfile
+            from xml.etree import ElementTree as ET
+            with zipfile.ZipFile(file_path) as z:
+                xml_content = z.read("word/document.xml")
+                tree = ET.fromstring(xml_content)
+                texts = [node.text for node in tree.iter() if node.text and node.text.strip()]
+                if texts:
+                    full_text.append(" ".join(texts))
+        except Exception:
+            pass
+
+    # 3. Final raw binary fallback for old binary .doc files
+    if not full_text:
+        try:
+            with open(file_path, "rb") as f:
+                raw_bytes = f.read()
+                found_strings = re.findall(rb'[\x20-\x7E]{4,}', raw_bytes)
+                valid_lines = []
+                for s in found_strings:
+                    try:
+                        decoded = s.decode('utf-8', errors='ignore').strip()
+                        if len(decoded) > 10 and not decoded.startswith(('Root Entry', 'WordDocument', 'Table', 'SummaryInformation')):
+                            valid_lines.append(decoded)
+                    except Exception:
+                        pass
+                if valid_lines:
+                    full_text.append("\n".join(valid_lines))
+        except Exception:
+            pass
+
     joined = "\n\n".join(full_text)
     cleaned = clean_text(joined)
     return [{"page": 1, "text": cleaned}] if cleaned else []
