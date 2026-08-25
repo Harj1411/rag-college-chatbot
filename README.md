@@ -63,14 +63,14 @@ College students and faculty frequently struggle to find official academic polic
 ---
 
 ## 6. Live Demo
-- 🌐 **Vercel Deployed Frontend App:** [https://rag-college-chatbot.vercel.app](https://rag-college-chatbot.vercel.app) *(Replace with your live Vercel URL)*
+- 🌐 **Vercel Deployed Frontend App:** [https://rag-college-chatbot.vercel.app](https://rag-college-chatbot.vercel.app)
 
 ---
 
 ## 7. Backend
-- ⚡ **Render Deployed API Base URL:** [https://rag-college-chatbot.onrender.com](https://rag-college-chatbot.onrender.com) *(Replace with your live Render URL)*
-- 📖 **Swagger Interactive API Documentation:** [https://rag-college-chatbot.onrender.com/docs](https://rag-college-chatbot.onrender.com/docs)
-- 💓 **API Health Heartbeat Endpoint:** [https://rag-college-chatbot.onrender.com/api/health](https://rag-college-chatbot.onrender.com/api/health)
+- ⚡ **Render Deployed API Base URL:** [https://campusmind-backend.onrender.com](https://campusmind-backend.onrender.com)
+- 📖 **Swagger Interactive API Documentation:** [https://campusmind-backend.onrender.com/docs](https://campusmind-backend.onrender.com/docs)
+- 💓 **API Health Heartbeat Endpoint:** [https://campusmind-backend.onrender.com/api/health](https://campusmind-backend.onrender.com/api/health)
 
 ---
 
