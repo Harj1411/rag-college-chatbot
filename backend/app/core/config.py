@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # RAG Settings
     CHROMA_PERSIST_DIR: str = Field(default="./chroma_db", env="CHROMA_PERSIST_DIR")
     UPLOAD_DIR: str = Field(default="./uploads", env="UPLOAD_DIR")
-    MIN_SIMILARITY_SCORE: float = Field(default=0.15, env="MIN_SIMILARITY_SCORE")
+    MIN_SIMILARITY_SCORE: float = Field(default=0.70, env="MIN_SIMILARITY_SCORE")
     TOP_K_CHUNKS: int = Field(default=4, env="TOP_K_CHUNKS")
     CHUNK_SIZE: int = 800
     CHUNK_OVERLAP: int = 100

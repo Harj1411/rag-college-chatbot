@@ -23,6 +23,18 @@ class ChromaVectorStore:
         )
         logger.info(f"ChromaDB initialized at {self.persist_dir} (Collection: {self.collection_name})")
 
+    def _reset_collection(self):
+        """Resets the collection if embedding dimension changes."""
+        try:
+            self.client.delete_collection(self.collection_name)
+        except Exception:
+            pass
+        self.collection = self.client.get_or_create_collection(
+            name=self.collection_name,
+            metadata={"hnsw:space": "cosine"}
+        )
+        logger.info(f"Re-created ChromaDB collection '{self.collection_name}'.")
+
     def add_chunks(self, chunks: List[Dict[str, Any]]) -> int:
         """
         Takes chunk dicts, generates embeddings, and saves into ChromaDB.
@@ -45,13 +57,26 @@ class ChromaVectorStore:
 
         embeddings = embedding_manager.embed_documents(texts)
 
-        # ChromaDB expects embeddings as list of float lists
-        self.collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=texts,
-            metadatas=metadatas
-        )
+        try:
+            self.collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=texts,
+                metadatas=metadatas
+            )
+        except Exception as e:
+            if "dimension" in str(e).lower() or "invalidargumenterror" in str(e).lower():
+                logger.warning(f"ChromaDB dimension mismatch ({e}). Resetting collection...")
+                self._reset_collection()
+                self.collection.add(
+                    ids=ids,
+                    embeddings=embeddings,
+                    documents=texts,
+                    metadatas=metadatas
+                )
+            else:
+                raise e
+
         logger.info(f"Added {len(chunks)} chunks to ChromaDB collection.")
         return len(chunks)
 

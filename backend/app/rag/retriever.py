@@ -33,12 +33,11 @@ class RAGRetriever:
 
         # Filter by threshold
         valid_chunks = [c for c in all_retrieved if c["score"] >= threshold]
-        
-        # Fallback: if strict threshold yielded 0, but candidates exist with positive score >= 0.08, use them
+
+        # Fallback: if strict threshold yielded 0, but candidates exist with positive score >= 0.10, return top candidates
         if not valid_chunks and all_retrieved:
-            best_score = all_retrieved[0]["score"]
-            if best_score >= 0.08:
-                valid_chunks = [c for c in all_retrieved if c["score"] >= 0.08]
+            if all_retrieved[0]["score"] >= 0.10:
+                valid_chunks = [c for c in all_retrieved if c["score"] >= 0.10][:k]
 
         logger.info(
             f"Query: '{query}' -> Found {len(all_retrieved)} chunks, {len(valid_chunks)} cleared threshold ({threshold})."

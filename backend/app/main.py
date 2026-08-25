@@ -25,6 +25,11 @@ logger = logging.getLogger("campusmind")
 async def lifespan(app: FastAPI):
     logger.info("Initializing CampusMind Backend Services...")
     await connect_db()
+    try:
+        from seed_demo import seed_if_empty
+        await seed_if_empty()
+    except Exception as e:
+        logger.warning(f"Auto-seed on startup failed ({e})")
     yield
     logger.info("Shutting down CampusMind Backend Services...")
     await close_db()

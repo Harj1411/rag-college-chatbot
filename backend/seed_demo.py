@@ -97,5 +97,10 @@ async def seed():
 
     print("🎉 Seeding complete! You can now start the server and log in immediately.")
 
+async def seed_if_empty():
+    if vector_store.count() == 0:
+        print("Vector store is empty. Auto-seeding college handbook...")
+        await seed()
+
 if __name__ == "__main__":
     asyncio.run(seed())

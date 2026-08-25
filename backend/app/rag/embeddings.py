@@ -9,7 +9,7 @@ logger = logging.getLogger("campusmind.embeddings")
 class GeminiEmbeddingManager:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
-        self.model_name = "models/text-embedding-004"
+        self.model_name = "models/gemini-embedding-001"
         if self.api_key:
             try:
                 genai.configure(api_key=self.api_key)
@@ -65,7 +65,7 @@ class GeminiEmbeddingManager:
         
         return self._local_fallback_vector(query)
 
-    def _local_fallback_vector(self, text: str, dim: int = 768) -> List[float]:
+    def _local_fallback_vector(self, text: str, dim: int = 3072) -> List[float]:
         """
         Deterministic pseudo-embedding for testing when GEMINI_API_KEY is not supplied.
         Uses SHA-256 seed to generate deterministic floats in [-1, 1].
