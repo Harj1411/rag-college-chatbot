@@ -17,9 +17,24 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
+    is_verified: bool = True
     created_at: str
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class UserVerifyEmailRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6)
+
+class UserResendOTPRequest(BaseModel):
+    email: EmailStr
+
+class RegisterResponse(BaseModel):
+    message: str
+    email: str
+    requires_verification: bool = True
+    access_token: Optional[str] = None
+    user: Optional[UserResponse] = None

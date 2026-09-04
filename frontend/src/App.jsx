@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import Chat from './pages/Chat';
 import History from './pages/History';
 import Settings from './pages/Settings';
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             {/* Authenticated User Routes */}
             <Route element={<ProtectedRoute />}>

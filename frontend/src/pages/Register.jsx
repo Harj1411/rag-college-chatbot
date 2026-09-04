@@ -14,8 +14,12 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register({ name, email, password, role });
-      navigate(role === 'admin' ? '/admin/documents' : '/chat');
+      const res = await register({ name, email, password, role });
+      if (res?.requires_verification) {
+        navigate(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      } else {
+        navigate(role === 'admin' ? '/admin/documents' : '/chat');
+      }
     } catch (err) {
       // Error handled in store
     }

@@ -178,9 +178,12 @@ async def ensure_default_seed():
             "email": admin_email,
             "password_hash": get_password_hash("admin123456"),
             "role": "admin",
+            "is_verified": True,
             "created_at": "2026-08-01T00:00:00.000Z"
         })
         logger.info(f"Default Admin account initialized: {admin_email} / admin123456")
+    elif not admin_user.get("is_verified", False):
+        await users_col.update_one({"email": admin_email}, {"$set": {"is_verified": True}})
 
     # Seed Student
     student_email = "student@campusmind.edu"
@@ -193,9 +196,12 @@ async def ensure_default_seed():
             "email": student_email,
             "password_hash": get_password_hash("student123456"),
             "role": "student",
+            "is_verified": True,
             "created_at": "2026-08-01T00:00:00.000Z"
         })
         logger.info(f"Default Student account initialized: {student_email} / student123456")
+    elif not student_user.get("is_verified", False):
+        await users_col.update_one({"email": student_email}, {"$set": {"is_verified": True}})
 
 async def connect_db():
     try:

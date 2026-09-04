@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, cast
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from app.core.config import settings
@@ -55,14 +55,14 @@ class ChromaVectorStore:
             for c in chunks
         ]
 
-        embeddings = embedding_manager.embed_documents(texts)
+        embeddings = cast(Any, embedding_manager.embed_documents(texts))
 
         try:
             self.collection.add(
                 ids=ids,
                 embeddings=embeddings,
                 documents=texts,
-                metadatas=metadatas
+                metadatas=cast(Any, metadatas)
             )
         except Exception as e:
             if "dimension" in str(e).lower() or "invalidargumenterror" in str(e).lower():
@@ -72,7 +72,7 @@ class ChromaVectorStore:
                     ids=ids,
                     embeddings=embeddings,
                     documents=texts,
-                    metadatas=metadatas
+                    metadatas=cast(Any, metadatas)
                 )
             else:
                 raise e
@@ -94,7 +94,7 @@ class ChromaVectorStore:
             return []
 
         query_vec = embedding_manager.embed_query(query)
-        where_clause = {"category": category} if category else None
+        where_clause: Optional[Any] = {"category": category} if category else None
 
         results = self.collection.query(
             query_embeddings=[query_vec],
@@ -104,11 +104,11 @@ class ChromaVectorStore:
         )
 
         retrieved = []
-        if results and "documents" in results and results["documents"]:
-            docs = results["documents"][0]
-            metas = results["metadatas"][0] if "metadatas" in results else []
-            distances = results["distances"][0] if "distances" in results else []
-            ids = results["ids"][0] if "ids" in results else []
+        if results and results.get("documents"):
+            docs = results["documents"][0] if results.get("documents") else []
+            metas = results["metadatas"][0] if results.get("metadatas") else []
+            distances = results["distances"][0] if results.get("distances") else []
+            ids = results["ids"][0] if results.get("ids") else []
 
             for i in range(len(docs)):
                 dist = distances[i] if i < len(distances) else 1.0
@@ -136,7 +136,7 @@ class ChromaVectorStore:
         try:
             # Find IDs matching doc_id
             all_entries = self.collection.get(
-                where={"doc_id": doc_id},
+                where=cast(Any, {"doc_id": doc_id}),
                 include=["metadatas"]
             )
             ids_to_del = all_entries.get("ids", [])

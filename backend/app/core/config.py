@@ -20,6 +20,16 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = Field(default="HS256", env="JWT_ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=1440, env="ACCESS_TOKEN_EXPIRE_MINUTES")  # 24 hours
 
+    # Email Verification & SMTP
+    REQUIRE_EMAIL_VERIFICATION: bool = Field(default=True, env="REQUIRE_EMAIL_VERIFICATION")
+    OTP_EXPIRE_MINUTES: int = Field(default=10, env="OTP_EXPIRE_MINUTES")
+    SMTP_HOST: str = Field(default="", env="SMTP_HOST")
+    SMTP_PORT: int = Field(default=587, env="SMTP_PORT")
+    SMTP_USER: str = Field(default="", env="SMTP_USER")
+    SMTP_PASSWORD: str = Field(default="", env="SMTP_PASSWORD")
+    SMTP_FROM_EMAIL: str = Field(default="noreply@campusmind.edu", env="SMTP_FROM_EMAIL")
+    SMTP_FROM_NAME: str = Field(default="CampusMind", env="SMTP_FROM_NAME")
+
     # RAG Settings
     CHROMA_PERSIST_DIR: str = Field(default="./chroma_db", env="CHROMA_PERSIST_DIR")
     UPLOAD_DIR: str = Field(default="./uploads", env="UPLOAD_DIR")

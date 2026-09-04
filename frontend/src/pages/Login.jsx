@@ -47,9 +47,21 @@ export default function Login() {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-300">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-            <span>{error}</span>
+          <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex flex-col gap-2 text-xs text-rose-300">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+            {error.toLowerCase().includes('verify') && email && (
+              <div className="pl-6.5">
+                <Link
+                  to={`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`}
+                  className="inline-flex items-center gap-1 font-semibold text-brand-400 hover:text-brand-300 hover:underline"
+                >
+                  Enter verification code here &rarr;
+                </Link>
+              </div>
+            )}
           </div>
         )}
 

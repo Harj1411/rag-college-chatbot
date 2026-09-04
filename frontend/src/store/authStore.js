@@ -8,6 +8,8 @@ export const useAuthStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
+  unverifiedEmail: localStorage.getItem('campusmind_unverified_email') || null,
+
   login: async (credentials) => {
     set({ isLoading: true, error: null });
     try {
@@ -16,6 +18,7 @@ export const useAuthStore = create((set, get) => ({
       
       localStorage.setItem('campusmind_token', access_token);
       localStorage.setItem('campusmind_user', JSON.stringify(user));
+      localStorage.removeItem('campusmind_unverified_email');
       
       set({
         token: access_token,
@@ -23,10 +26,16 @@ export const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        unverifiedEmail: null,
       });
       return user;
     } catch (err) {
       const msg = err.response?.data?.detail || 'Login failed. Please check your credentials.';
+      const isUnverified = err.response?.status === 403 && msg.toLowerCase().includes('verify');
+      if (isUnverified) {
+        localStorage.setItem('campusmind_unverified_email', credentials.email);
+        set({ unverifiedEmail: credentials.email });
+      }
       set({ error: msg, isLoading: false });
       throw new Error(msg);
     }
@@ -36,22 +45,74 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await authAPI.register(data);
+      const { requires_verification, access_token, user } = res.data;
+
+      if (requires_verification) {
+        localStorage.setItem('campusmind_unverified_email', data.email);
+        set({
+          isLoading: false,
+          error: null,
+          unverifiedEmail: data.email,
+        });
+        return res.data;
+      }
+
+      // If verification is disabled and token returned immediately
+      if (access_token && user) {
+        localStorage.setItem('campusmind_token', access_token);
+        localStorage.setItem('campusmind_user', JSON.stringify(user));
+        localStorage.removeItem('campusmind_unverified_email');
+        set({
+          token: access_token,
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+          unverifiedEmail: null,
+        });
+      }
+      return res.data;
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Registration failed. Please try again.';
+      set({ error: msg, isLoading: false });
+      throw new Error(msg);
+    }
+  },
+
+  verifyEmail: async ({ email, otp }) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await authAPI.verifyEmail({ email, otp });
       const { access_token, user } = res.data;
-      
+
       localStorage.setItem('campusmind_token', access_token);
       localStorage.setItem('campusmind_user', JSON.stringify(user));
-      
+      localStorage.removeItem('campusmind_unverified_email');
+
       set({
         token: access_token,
         user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        unverifiedEmail: null,
       });
       return user;
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Registration failed. Please try again.';
+      const msg = err.response?.data?.detail || 'Verification failed. Please check the code.';
       set({ error: msg, isLoading: false });
+      throw new Error(msg);
+    }
+  },
+
+  resendOTP: async ({ email }) => {
+    set({ error: null });
+    try {
+      const res = await authAPI.resendOTP({ email });
+      return res.data;
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Failed to resend code. Please try again.';
+      set({ error: msg });
       throw new Error(msg);
     }
   },

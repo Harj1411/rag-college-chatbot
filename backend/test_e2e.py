@@ -2,13 +2,19 @@ import sys
 import json
 import urllib.request
 import urllib.error
+from typing import Tuple, Any, Optional
 
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    getattr(sys.stdout, "reconfigure")(encoding="utf-8", errors="replace")
 
 BASE_URL = "http://127.0.0.1:8000/api"
 
-def make_request(path, method="GET", data=None, token=None):
+def make_request(
+    path: str,
+    method: str = "GET",
+    data: Optional[Any] = None,
+    token: Optional[str] = None
+) -> Tuple[int, Any]:
     url = f"{BASE_URL}{path}"
     headers = {"Content-Type": "application/json"}
     if token:
@@ -37,8 +43,9 @@ def run_tests():
     assert status == 200, f"Health check failed: {res}"
     print(f"✅ [1/7] Health Check Passed: {res['service']} (Vectors: {res['chroma_vectors_count']})")
 
-    # 2. Register Student
+    # 2. Register Student & Verify with 6-digit OTP
     import uuid
+    import os
     rand_email = f"test_student_{uuid.uuid4().hex[:6]}@campusmind.edu"
     status, res = make_request("/auth/register", method="POST", data={
         "name": "Integration Test Student",
@@ -47,14 +54,54 @@ def run_tests():
         "role": "student"
     })
     assert status == 200, f"Registration failed: {res}"
+    assert res.get("requires_verification") is True, f"Expected requires_verification=True: {res}"
+    print(f"✅ [2/7] Student Registration Dispatched OTP: {rand_email}")
+
+    # 2a. Verify Unverified Login is Blocked (403 Forbidden)
+    status, res = make_request("/auth/login", method="POST", data={
+        "email": rand_email,
+        "password": "password123"
+    })
+    assert status == 403, f"Expected 403 Forbidden for unverified user, got: {status} ({res})"
+    print(f"   [2a] Unverified Login Guard Passed (403 Forbidden)")
+
+    # 2b. Verify Invalid OTP is Blocked (400 Bad Request)
+    status, res = make_request("/auth/verify-email", method="POST", data={
+        "email": rand_email,
+        "otp": "000000"
+    })
+    assert status == 400, f"Expected 400 Bad Request for invalid OTP, got: {status} ({res})"
+    print(f"   [2b] Invalid OTP Guard Passed (400 Bad Request)")
+
+    # 2c. Retrieve OTP from database store
+    otp_code = None
+    local_db_path = os.path.join(os.path.dirname(__file__), "local_db.json")
+    if os.path.exists(local_db_path):
+        with open(local_db_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            users = data.get("users", {})
+            for u in users.values():
+                if u.get("email") == rand_email:
+                    otp_code = u.get("verification_otp")
+                    break
+
+    assert otp_code, f"Could not find OTP in local DB for {rand_email}"
+
+    # 2d. Verify with correct OTP
+    status, res = make_request("/auth/verify-email", method="POST", data={
+        "email": rand_email,
+        "otp": otp_code
+    })
+    assert status == 200, f"OTP verification failed: {res}"
     student_token = res["access_token"]
-    print(f"✅ [2/7] Student Registration Passed: {rand_email}")
+    print(f"   [2c] OTP Verification Passed: Activated {rand_email} with code [{otp_code}]")
 
     # 3. Auth Profile Check
     status, res = make_request("/auth/me", token=student_token)
     assert status == 200, f"Auth me failed: {res}"
     assert res["role"] == "student"
-    print(f"✅ [3/7] Auth /me Profile Passed: {res['name']} ({res['role']})")
+    assert res.get("is_verified") is True
+    print(f"✅ [3/7] Auth /me Profile Passed: {res['name']} ({res['role']}, Verified: {res.get('is_verified')})")
 
     # 4. Create Chat Session
     status, res = make_request("/chat/sessions", method="POST", data={"title": "Test Academic Inquiries"}, token=student_token)
